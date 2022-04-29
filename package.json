@@ -1,12 +1,8 @@
 {
-  "name": "chrome-extension-boilerplate-react",
+  "name": "funky-radish",
   "version": "4.3.5",
-  "description": "A chrome extension boilerplate built with React 17, Webpack 5, and Webpack Dev Server 4",
+  "description": "Supercharge your digital recipe interactions.",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lxieyang/chrome-extension-boilerplate-react.git"
-  },
   "scripts": {
     "build": "node utils/build.js",
     "start": "node utils/webserver.js",
@@ -14,6 +10,7 @@
   },
   "dependencies": {
     "@hot-loader/react-dom": "^17.0.2",
+    "cheerio": "^1.0.0-rc.10",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-hot-loader": "^4.13.0"

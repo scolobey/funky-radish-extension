@@ -1,4 +1,9 @@
-<img src="src/assets/img/icon-128.png" width="64"/>
+<img src="src/assets/img/icon_128.png" width="64"/>
+
+# FR specific notes
+Original package contained added functionality. So initial commit maintains this functionality as a reference if I want to add any of it back in the future.
+
+But I've removed newTab, options, devtools, etc.
 
 # Chrome Extension Boilerplate with React 17 and Webpack 5
 
