@@ -3,7 +3,15 @@
 # FR specific notes
 Original package contained added functionality. So initial commit maintains this functionality as a reference if I want to add any of it back in the future.
 
-But I've removed newTab, options, devtools, etc.
+But I've removed newTab, options, devtools, etc and their referecnces in webpack configuration and throughout code.
+
+#Release notes
+1. Create a zip file
+  - delete the build
+  - run 'npm start' for a fresh build
+  - Double check that the build is running correctly
+  - 2-finger click on the build file in finder and click to 'compress'
+2.
 
 # Chrome Extension Boilerplate with React 17 and Webpack 5
 

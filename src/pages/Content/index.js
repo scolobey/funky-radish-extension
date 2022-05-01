@@ -18,61 +18,69 @@ function parseRecipe(html) {
   const $ = cheerio.load(html);
   let jsonld;
 
-  const node = $('script[type="application/ld+json"]').get(0);
+  let nodesList = $('script[type="application/ld+json"]')
 
-  try {
-    jsonld = JSON.parse(node.firstChild.data)
+  for (var i = 0; i < nodesList.length; i++) {
 
-    // if json+ld presents as an array of jsonld objects
-    if (Array.isArray(jsonld)) {
-      let filteredList = jsonld.filter(function(schemaFilter) {
-        return schemaFilter["@type"] == "Recipe";
-      })
+    console.log("checking: " + i);
 
-      jsonld = filteredList.pop()
-    }
+    const node = nodesList[i]
 
-    // Simplest format. Top level recipe
-    if (jsonld && jsonld.recipeIngredient && jsonld.recipeInstructions && jsonld.name) {
+    try {
+      jsonld = JSON.parse(node.firstChild.data)
 
-      // Rare issue. Instruction array is wrapped in an extra array.
-      // https%3A%2F%2Ffood52.com%2Frecipes%2F87220-sambal-potatoes-aioli-recipe
-      if (!jsonld.recipeInstructions[0].text) {
-        jsonld.recipeInstructions = jsonld.recipeInstructions[0]
+      // if json+ld presents as an array of jsonld objects
+      if (Array.isArray(jsonld)) {
+        let filteredList = jsonld.filter(function(schemaFilter) {
+          return schemaFilter["@type"] == "Recipe";
+        })
+
+        jsonld = filteredList.pop()
       }
 
-      return {
-        message: "Recipe parsing successful.",
-        ingredients: jsonld.recipeIngredient.map((ing) => ing.replace(/<\/?[^>]+(>|$)/g, "")),
-        directions: jsonld.recipeInstructions.map((dir) => dir.text.replace(/<\/?[^>]+(>|$)/g, "")),
-        title: jsonld.name
-      }
-    }
+      // Simplest format. Top level recipe
+      if (jsonld && jsonld.recipeIngredient && jsonld.recipeInstructions && jsonld.name) {
 
-    // Recipe is nested within @graph type
-    else if (jsonld["@graph"]){
-      let rec = jsonld["@graph"].filter(function(schemaFilter) {
-        return schemaFilter["@type"] == "Recipe";
-      })
+        // Rare issue. Instruction array is wrapped in an extra array.
+        // https%3A%2F%2Ffood52.com%2Frecipes%2F87220-sambal-potatoes-aioli-recipe
+        if (!jsonld.recipeInstructions[0].text) {
+          jsonld.recipeInstructions = jsonld.recipeInstructions[0]
+        }
 
-      if (rec.length > 0) {
         return {
           message: "Recipe parsing successful.",
-          ingredients: rec[0].recipeIngredient.map((ing) => ing.replace(/<\/?[^>]+(>|$)/g, "")),
-          directions: rec[0].recipeInstructions.map((dir) => dir.text.replace(/<\/?[^>]+(>|$)/g, "")),
-          title: rec[0].name
+          ingredients: jsonld.recipeIngredient.map((ing) => ing.replace(/<\/?[^>]+(>|$)/g, "")),
+          directions: jsonld.recipeInstructions.map((dir) => dir.text.replace(/<\/?[^>]+(>|$)/g, "")),
+          title: jsonld.name
         }
-      } else {
-        return { message: "Can't find recipe markup." }
       }
+      // Recipe is nested within @graph type
+      else if (jsonld["@graph"]){
+        let rec = jsonld["@graph"].filter(function(schemaFilter) {
+          return schemaFilter["@type"] == "Recipe";
+        })
+
+        if (rec.length > 0) {
+          return {
+            message: "Recipe parsing successful.",
+            ingredients: rec[0].recipeIngredient.map((ing) => ing.replace(/<\/?[^>]+(>|$)/g, "")),
+            directions: rec[0].recipeInstructions.map((dir) => dir.text.replace(/<\/?[^>]+(>|$)/g, "")),
+            title: rec[0].name
+          }
+        } else if ( i == nodesList.length-1 ) {
+          return { message: "Can't find recipe markup." }
+        }
+      }
+      else if ( i == nodesList.length-1 ) {
+        console.log("jsonld: " + JSON.stringify(jsonld))
+        return { message: "Recipe markup missing" }
+      }
+    } catch (err) {
+      return { message: "json+ld parsing failed" }
     }
-    else {
-      console.log("jsonld: " + JSON.stringify(jsonld))
-      return { message: "Recipe markup missing" }
-    }
-  } catch (err) {
-    return { message: "json+ld parsing failed" }
+
   }
+
 }
 
 function checkForRecipe(html) {
@@ -108,8 +116,10 @@ function DOMtoString(document_root) {
   let recipeMessage
 
   if ( checkForRecipe(html) ) {
+    console.log("some recipe detected");
     recipeMessage = parseRecipe(html)
   } else {
+    console.log("no recipe detected");
     recipeMessage = {
       message: "json+ld formatting was not detected."
     }
