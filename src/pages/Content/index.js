@@ -21,9 +21,6 @@ function parseRecipe(html) {
   let nodesList = $('script[type="application/ld+json"]')
 
   for (var i = 0; i < nodesList.length; i++) {
-
-    console.log("checking: " + i);
-
     const node = nodesList[i]
 
     try {
@@ -40,7 +37,6 @@ function parseRecipe(html) {
 
       // Simplest format. Top level recipe
       if (jsonld && jsonld.recipeIngredient && jsonld.recipeInstructions && jsonld.name) {
-
         // Rare issue. Instruction array is wrapped in an extra array.
         // https%3A%2F%2Ffood52.com%2Frecipes%2F87220-sambal-potatoes-aioli-recipe
         if (!jsonld.recipeInstructions[0].text) {
@@ -51,7 +47,8 @@ function parseRecipe(html) {
           message: "Recipe parsing successful.",
           ingredients: jsonld.recipeIngredient.map((ing) => ing.replace(/<\/?[^>]+(>|$)/g, "")),
           directions: jsonld.recipeInstructions.map((dir) => dir.text.replace(/<\/?[^>]+(>|$)/g, "")),
-          title: jsonld.name
+          title: jsonld.name,
+          url: document.location.href
         }
       }
       // Recipe is nested within @graph type
@@ -65,7 +62,8 @@ function parseRecipe(html) {
             message: "Recipe parsing successful.",
             ingredients: rec[0].recipeIngredient.map((ing) => ing.replace(/<\/?[^>]+(>|$)/g, "")),
             directions: rec[0].recipeInstructions.map((dir) => dir.text.replace(/<\/?[^>]+(>|$)/g, "")),
-            title: rec[0].name
+            title: rec[0].name,
+            url: document.location.href
           }
         } else if ( i == nodesList.length-1 ) {
           return { message: "Can't find recipe markup." }
@@ -116,7 +114,7 @@ function DOMtoString(document_root) {
   let recipeMessage
 
   if ( checkForRecipe(html) ) {
-    console.log("some recipe detected");
+    console.log("recipe detected");
     recipeMessage = parseRecipe(html)
   } else {
     console.log("no recipe detected");
@@ -125,19 +123,15 @@ function DOMtoString(document_root) {
     }
   }
 
-  console.log("response: " + JSON.stringify(recipeMessage) + "\n" + html);
+  console.log("response: " + JSON.stringify(recipeMessage));
 
   if (recipeMessage.message == "Recipe parsing successful.") {
-    console.log("icon color");
-
     chrome.runtime.sendMessage({
         action: "setIcon",
         color: true
     });
 
   } else {
-    console.log("icon gray");
-
     chrome.runtime.sendMessage({
         action: "setIcon",
         color: false

@@ -9,8 +9,6 @@ chrome.runtime.onMessage.addListener(
 
     if (request.action == "setIcon") {
       if (request.color) {
-        console.log("color is true");
-
         chrome.action.setIcon({
           path: {
             "16": "16_icon.png",
@@ -21,8 +19,6 @@ chrome.runtime.onMessage.addListener(
           tabId: sender.tab.id
         })
       } else {
-        console.log("color is false");
-
         chrome.action.setIcon({
           path: {
             "16": "16_gray.png",
@@ -33,13 +29,6 @@ chrome.runtime.onMessage.addListener(
           tabId: sender.tab.id
         })
       }
-    }
-
-    if (request.recipe && request.recipe.message == 'Recipe parsing successful.') {
-      console.log("theres a recipe in the bg");
-    }
-    else {
-      console.log("no rec in the bg");
     }
   }
 );
@@ -63,16 +52,30 @@ function script() {
       }).join("\n")
 
       let string = `
-        <div class="recipe">
-          <div class="recipe-title">
-            {title}
+        <div class="fr-recipe">
+          <div class="fr-recipe-header">
+            <div class="fr-recipe-title">
+              {title}
+            </div>
+            <a href="{import-link}">
+              <label for="bookmark" class="fr-btn fr-btn-bookmark">
+                <svg>
+                  <use xlink:href="#icon-bookmark"/>
+                </svg>
+              </label>
+            </a>
+            <svg>
+              <symbol fill="transparent" viewBox="0 0 24 24" stroke="currentColor" id="icon-bookmark">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+              </symbol>
+            </svg>
           </div>
-          <div class="recipe-ingredients">
+          <div class="fr-recipe-ingredients">
             <ul>
               {ingredients}
             </ul>
           </div>
-          <div class="recipe-directions">
+          <div class="fr-recipe-directions">
             <ul>
               {directions}
             </ul>
@@ -82,6 +85,7 @@ function script() {
       string = string.replace('{ingredients}', ingredients)
       string = string.replace('{directions}', directions)
       string = string.replace('{title}', recipeMessage.recipe.title)
+      string = string.replace('{import-link}', 'https://www.funkyradish.com/builder/import/' + encodeURIComponent(recipeMessage.recipe.url))
 
       var div = document.createElement("div");
       div.className = "funkyradish-recipe-container";
